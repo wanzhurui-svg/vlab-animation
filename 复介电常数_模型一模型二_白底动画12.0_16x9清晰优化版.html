@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>复介电常数｜模型一、模型二动画</title>
+  <style>
+    :root { --ink:#14213d; --muted:#64748b; --line:#dbe5f0; --blue:#2563eb; --cyan:#06b6d4; --orange:#f97316; --soft:#f7faff; --danger:#dc2626; --canvas-title-size:32px; --metric-value-size:14px; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:320px; background:#fff; color:var(--ink); font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif; }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    .app { max-width:1760px; min-height:100vh; margin:0 auto; padding:28px clamp(18px,3.2vw,58px) 36px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; padding-bottom:20px; border-bottom:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:700; letter-spacing:.03em; }
+    .brand-mark { display:grid; place-items:center; width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,var(--blue),var(--cyan)); color:#fff; font-family:Georgia,serif; font-size:20px; }
+    .nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .nav button, .back { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:9px; padding:9px 13px; transition:.2s ease; }
+    .nav button:hover, .back:hover { border-color:#93c5fd; color:var(--blue); background:#f8fbff; }
+    .nav button.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+    .view { display:none; }
+    .view.active { display:block; }
+    .home-hero { max-width:790px; padding:clamp(54px,10vh,105px) 0 45px; }
+    .eyebrow { margin:0 0 14px; color:var(--blue); font-size:13px; font-weight:700; letter-spacing:.13em; }
+    h1 { max-width:750px; margin:0; font-family:Georgia,"Times New Roman",serif; font-size:clamp(39px,6vw,72px); line-height:1.08; letter-spacing:-.045em; }
+    .lead { max-width:630px; margin:20px 0 0; color:var(--muted); font-size:clamp(16px,2vw,19px); line-height:1.85; }
+    .choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; padding:8px 0 36px; }
+    .model-card { position:relative; min-height:360px; overflow:hidden; border:1px solid var(--line); border-radius:18px; background:#fff; text-align:left; transition:transform .25s, box-shadow .25s, border-color .25s; }
+    .model-card:hover { transform:translateY(-5px); border-color:#93c5fd; box-shadow:0 18px 42px rgba(37,99,235,.12); }
+    .card-copy { position:relative; z-index:1; padding:25px; max-width:82%; }
+    .card-number { color:var(--blue); font-size:13px; font-weight:700; letter-spacing:.1em; }
+    .model-card h2 { margin:9px 0 10px; font-size:24px; }
+    .model-card p { margin:0; color:var(--muted); line-height:1.7; font-size:14px; }
+    .open-link { display:inline-flex; align-items:center; gap:7px; margin-top:19px; color:var(--blue); font-size:14px; font-weight:700; }
+    .mini { position:absolute; inset:auto 0 0; height:205px; width:100%; }
+    .mini .tablet { position:absolute; left:10%; bottom:23px; width:78%; height:48px; border:3px solid #1e3a8a; border-radius:7px; background:linear-gradient(#e0f2fe 0 34%,#f8fafc 34% 65%,#bfe0ff 65%); }
+    .mini .finger { position:absolute; left:51%; bottom:103px; width:30px; height:92px; border:2px solid #b45309; border-radius:18px 18px 13px 13px; background:linear-gradient(90deg,#f7c6a6,#ffe1cc,#eab08f); transform-origin:bottom; animation:tap 2.4s ease-in-out infinite; }
+    .mini .pulse { position:absolute; left:calc(51% - 42px); bottom:68px; width:114px; height:46px; border:2px solid rgba(37,99,235,.45); border-top:0; border-radius:0 0 50% 50%; animation:pulse 2.4s ease-in-out infinite; }
+    .mini .oven { position:absolute; left:11%; bottom:22px; width:78%; height:135px; border:3px solid #334155; border-radius:12px; background:#ecf5ff; overflow:hidden; }
+    .mini .wave { position:absolute; left:4%; width:94%; height:24px; border-top:3px solid #60a5fa; border-radius:50%; animation:wave 1.8s linear infinite; }
+    .mini .wave:nth-child(1){top:24px}.mini .wave:nth-child(2){top:57px;animation-delay:-.6s}.mini .wave:nth-child(3){top:91px;animation-delay:-1.2s}
+    .mini .bowl { position:absolute; left:36%; bottom:17px; width:86px; height:40px; border:3px solid #0284c7; border-top:0; border-radius:0 0 46px 46px; background:#bfeaff; }
+    .mini .steam { position:absolute; left:50%; bottom:64px; width:12px; height:44px; border-left:3px solid rgba(249,115,22,.7); border-radius:50%; animation:steam 1.6s ease-in-out infinite; }
+    .mini .steam.s2 { left:58%; animation-delay:-.7s; }
+    .scene-header { padding:26px 0 16px; }
+    .scene-header-row { display:flex; align-items:center; gap:14px; }
+    .scene-header h1 { font-family:"Microsoft YaHei","PingFang SC",sans-serif; font-size:clamp(32px,3.2vw,50px); letter-spacing:-.025em; }
+    .formula { margin:10px 0 0 49px; color:var(--blue); font-family:Georgia,"Times New Roman",serif; font-size:20px; line-height:1.5; }
+    .scene-grid { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:24px; align-items:start; }
+    .heating-grid { grid-template-columns:minmax(0,1fr) 360px; }
+    .stage-wrap { min-height:0; aspect-ratio:16/9; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,#fff 0%,#f8fbff 100%); overflow:hidden; }
+    .heating-stage { min-height:0; }
+    #model-2 .scene-header > .formula:not(.model2-formula) { display:none; }
+    canvas { display:block; width:100%; height:100%; }
+    .side { display:flex; flex-direction:column; gap:14px; }
+    .panel { border:1px solid var(--line); border-radius:14px; background:#fff; padding:20px; }
+    .panel h2 { margin:0 0 14px; font-size:17px; }
+    .metric { display:flex; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid #edf2f7; font-size:14px; }
+    .metric:first-of-type { border-top:0; }
+    .metric span { color:var(--muted); }
+    .metric strong { max-width:190px; color:var(--ink); text-align:right; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:var(--metric-value-size); }
+    .control { margin-top:18px; }
+    .control label { display:flex; align-items:center; justify-content:flex-start; gap:8px; margin-bottom:8px; color:#475569; font-size:14px; }
+    .control output { margin-left:auto; color:var(--blue); font-family:ui-monospace,Consolas,monospace; }
+    .auto-scan { flex:0 0 auto; border:1px solid var(--line); border-radius:6px; background:#fff; color:#475569; padding:4px 7px; font-size:12px; line-height:1.2; cursor:pointer; }
+    .auto-scan:hover { border-color:#93c5fd; color:var(--blue); }
+    .auto-scan.on { background:var(--blue); border-color:var(--blue); color:#fff; }
+    input[type=range] { width:100%; accent-color:var(--blue); }
+    .segmented { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+    .segmented button { min-height:42px; border:1px solid var(--line); border-radius:7px; background:#fff; color:#475569; padding:7px 4px; font-size:14px; }
+    .segmented button:hover { border-color:#93c5fd; color:var(--blue); }
+    .segmented button.active { border-color:var(--blue); background:#eff6ff; color:var(--blue); font-weight:700; }
+    .transport { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto; padding:12px 0 0; flex-wrap:wrap; }
+    .transport button { border:0; border-radius:8px; background:var(--ink); color:#fff; padding:10px 14px; font-size:14px; }
+    .transport button:hover { background:var(--blue); }
+    .transport .export { background:var(--blue); }
+    .transport .export:hover { background:#1d4ed8; }
+    .transport .export:disabled { opacity:.62; cursor:wait; }
+    .speed { display:flex; gap:4px; }
+    .speed button { padding:8px 9px; border:1px solid var(--line); border-radius:7px; background:#fff; color:#475569; font-size:13px; }
+    .speed button.active { color:var(--blue); border-color:#93c5fd; background:#eff6ff; }
+    .caption { margin:14px 0 0; color:var(--muted); font-size:14px; line-height:1.65; }
+    @keyframes tap { 0%,100%{transform:translateY(-20px)} 50%{transform:translateY(12px)} }
+    @keyframes pulse { 0%,100%{opacity:.15;transform:scale(.78)} 50%{opacity:1;transform:scale(1.1)} }
+    @keyframes wave { from{transform:translateX(-14px)} to{transform:translateX(14px)} }
+    @keyframes steam { 0%,100%{opacity:.15;transform:translateY(8px)} 50%{opacity:1;transform:translateY(-10px)} }
+    @media (max-width:980px) { .scene-grid,.heating-grid { grid-template-columns:1fr; } .side { display:grid; grid-template-columns:1fr 1fr; } .side .panel:last-child { grid-column:1/-1; } }
+    @media (max-width:620px) { .app { padding:16px 15px 24px; } .topbar { align-items:flex-start; flex-direction:column; } .nav { justify-content:flex-start; } .choices,.side { grid-template-columns:1fr; } .model-card { min-height:325px; } .scene-header { padding-top:25px; } .formula { margin-left:0; font-size:17px; line-height:1.5; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">ε</span><span>复介电常数 · 动画实验室</span></div>
+      <nav class="nav" aria-label="模型导航">
+        <button type="button" data-route="home">首页</button>
+        <button type="button" data-route="model-1">模型一</button>
+        <button type="button" data-route="model-2">模型二</button>
+      </nav>
+    </header>
+
+    <section id="home" class="view" aria-labelledby="home-title">
+      <div class="home-hero">
+        <p class="eyebrow">INTERACTIVE DIELECTRICS</p>
+        <h1 id="home-title">用动画看见复介电常数的两种作用。</h1>
+        <p class="lead">模型一呈现介电常数实部 ε′ 如何改变电容耦合；模型二呈现虚部 ε″ 如何决定微波能量吸收。选择一个模型，进入独立的交互演示。</p>
+      </div>
+      <div class="choices">
+        <button class="model-card" type="button" data-route="model-1" aria-label="打开模型一：触摸屏电容感应">
+          <div class="card-copy"><div class="card-number">MODEL 01 · ε′</div><h2>触摸屏电容感应</h2><p>手指接近或水滴出现时，电场线如何弯曲，电容变化如何被芯片识别。</p><span class="open-link">进入模型 <span aria-hidden="true">→</span></span></div>
+          <div class="mini" aria-hidden="true"><div class="finger"></div><div class="pulse"></div><div class="tablet"></div></div>
+        </button>
+        <button class="model-card" type="button" data-route="model-2" aria-label="打开模型二：微波炉选择性加热">
+          <div class="card-copy"><div class="card-number">MODEL 02 · ε″</div><h2>微波炉选择性加热</h2><p>比较水、陶瓷与金属面对交变微波时的分子响应、吸收与反射。</p><span class="open-link">进入模型 <span aria-hidden="true">→</span></span></div>
+          <div class="mini" aria-hidden="true"><div class="oven"><div class="wave"></div><div class="wave"></div><div class="wave"></div><div class="bowl"></div><div class="steam"></div><div class="steam s2"></div></div></div>
+        </button>
+      </div>
+    </section>
+
+    <section id="model-1" class="view" aria-labelledby="m1-title">
+      <div class="scene-header">
+        <div class="scene-header-row"><button class="back" type="button" data-route="home" aria-label="返回首页">←</button><h1 id="m1-title">模型一：触摸屏电容感应</h1></div>
+        <p class="formula">D(t) = ε₀ ε* E(t)，ε* = ε′ − iε″　·　ε′ 增大 → C = ε₀ ε′ A / d 增大</p>
+      </div>
+      <div class="scene-grid">
+        <div class="stage-wrap"><canvas id="canvas1" aria-label="触摸屏电容感应动画"></canvas></div>
+        <aside class="side" aria-label="模型一控制与读数">
+          <section class="panel"><h2>实时读数</h2><div id="m1Metrics"></div></section>
+          <section class="panel"><h2>参数控制</h2>
+            <div class="control"><label for="m1Distance"><button class="auto-scan" type="button" data-auto="m1Distance">▶ 自动</button>手指距离 <output id="m1DistanceOut"></output></label><input id="m1Distance" type="range" min="2" max="60" value="18"></div>
+            <div class="control"><label for="m1Eps"><button class="auto-scan" type="button" data-auto="m1Eps">▶ 自动</button>相对介电常数 εᵣ <output id="m1EpsOut"></output></label><input id="m1Eps" type="range" min="1" max="85" value="4"></div>
+            <div class="control"><label for="m1Volt"><button class="auto-scan" type="button" data-auto="m1Volt">▶ 自动</button>驱动电压 <output id="m1VoltOut"></output></label><input id="m1Volt" type="range" min="1" max="10" step=".5" value="3"></div>
+            <div class="control"><label for="m1Frequency"><button class="auto-scan" type="button" data-auto="m1Frequency">▶ 自动</button>扫描频率 <output id="m1FrequencyOut"></output></label><input id="m1Frequency" type="range" min="50" max="500" step="10" value="100"></div>
+            <div class="control"><label>耦合状态</label><div class="segmented" id="m1Mode"><button type="button" data-value="none">无手指</button><button type="button" data-value="finger" class="active">手指</button><button type="button" data-value="water">水滴</button></div></div>
+          </section>
+          <section class="panel transport"><button type="button" class="play">暂停</button><div class="speed"><button type="button" data-speed=".5">0.5×</button><button type="button" data-speed="1" class="active">1×</button><button type="button" data-speed="2">2×</button></div><button type="button" class="export">导出 MP4</button></section>
+        </aside>
+      </div>
+      <p class="caption">电场线会随手指距离和介电常数实时改变。水滴具有较高 εᵣ，可能带来更强耦合与误触风险。</p>
+    </section>
+
+    <section id="model-2" class="view" aria-labelledby="m2-title">
+      <div class="scene-header">
+        <p class="formula model2-formula">P_loss ∝ ωε0ε″|E|²</p>
+        <div class="scene-header-row"><button class="back" type="button" data-route="home" aria-label="返回首页">←</button><h1 id="m2-title">模型二：微波炉选择性加热</h1></div>
+        <p class="formula">Pₐᵦₛ ∝ 2π f ε₀ ε″(f) |E|²　·　频率决定损耗响应，输入功率决定场强</p>
+      </div>
+      <div class="scene-grid heating-grid">
+        <div class="stage-wrap heating-stage"><canvas id="canvas2" aria-label="微波炉选择性加热动画"></canvas></div>
+        <aside class="side" aria-label="模型二控制与读数">
+          <section class="panel"><h2>实时读数</h2><div id="m2Metrics"></div></section>
+          <section class="panel"><h2>参数控制</h2>
+            <div class="control"><label for="m2Power"><button class="auto-scan" type="button" data-auto="m2Power">▶ 自动</button>输入功率 Pᵢₙ <output id="m2PowerOut"></output></label><input id="m2Power" type="range" min="100" max="1000" step="50" value="700"></div>
+            <div class="control"><label for="m2Time"><button class="auto-scan" type="button" data-auto="m2Time">▶ 自动</button>加热时间 <output id="m2TimeOut"></output></label><input id="m2Time" type="range" min="0" max="180" step="5" value="0"></div>
+            <div class="control"><label for="m2Frequency"><button class="auto-scan" type="button" data-auto="m2Frequency">▶ 自动</button>频率 <output id="m2FrequencyOut"></output></label><input id="m2Frequency" type="range" min="1" max="5" step=".05" value="2.45"></div>
+            <div class="control"><label>材料</label><div class="segmented" id="m2Material"><button type="button" data-value="water" class="active">水</button><button type="button" data-value="ceramic">陶瓷</button><button type="button" data-value="metal">金属</button></div></div>
+          </section>
+          <section class="panel transport"><button type="button" class="play">暂停</button><div class="speed"><button type="button" data-speed=".5">0.5×</button><button type="button" data-speed="1" class="active">1×</button><button type="button" data-speed="2">2×</button></div><button type="button" class="export">导出 MP4</button></section>
+        </aside>
+      </div>
+      <p class="caption">水的极性分子在交变电场中旋转并损耗能量；陶瓷几乎透波；金属主要反射微波，实际使用中不应放入微波炉。</p>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const VIDEO_WIDTH=1920, VIDEO_HEIGHT=1080;
+      const TYPOGRAPHY={fontSize:'large', chain:18, label:18, annotation:17, metric:14};
+      const $ = (s, root=document) => root.querySelector(s);
+      const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+      const colors = { ink:'#14213d', muted:'#64748b', blue:'#2563eb', cyan:'#06b6d4', orange:'#f97316', red:'#dc2626', line:'#dbe5f0' };
+      const state = {
+        m1:{distance:18, eps:4, volt:3, freq:100, mode:'finger', playing:true, speed:1, t:0, autoScan:null, autoPosition:0, autoDirection:1, recorder:null},
+        m2:{power:700, time:0, freq:2.45, material:'water', playing:true, speed:1, t:0, autoScan:null, autoPosition:0, autoDirection:1, recorder:null}
+      };
+      const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+      const lerp=(a,b,t)=>a+(b-a)*t;
+
+      function go(route) { location.hash = route === 'home' ? '' : route; }
+      function route() {
+        const name = location.hash.slice(1) || 'home';
+        $$('.view').forEach(v => v.classList.toggle('active', v.id === name));
+        $$('[data-route]').forEach(b => b.classList.toggle('active', b.dataset.route === name));
+        if (!['home','model-1','model-2'].includes(name)) go('home');
+      }
+      $$('[data-route]').forEach(el => el.addEventListener('click', () => go(el.dataset.route)));
+      addEventListener('hashchange', route); route();
+
+      function fit(canvas) {
+        const rect = canvas.getBoundingClientRect();
+        if (canvas.width !== VIDEO_WIDTH || canvas.height !== VIDEO_HEIGHT) { canvas.width=VIDEO_WIDTH; canvas.height=VIDEO_HEIGHT; }
+        const ctx=canvas.getContext('2d'); ctx.setTransform(1,0,0,1,0,0); return {ctx,w:VIDEO_WIDTH,h:VIDEO_HEIGHT};
+      }
+      function text(ctx, txt, x, y, opts={}) { ctx.save(); ctx.fillStyle=opts.color||colors.ink; ctx.font=opts.font||'13px "Microsoft YaHei", sans-serif'; ctx.textAlign=opts.align||'center'; ctx.textBaseline=opts.base||'middle'; ctx.fillText(txt,x,y); ctx.restore(); }
+      function rounded(ctx,x,y,w,h,r) { ctx.beginPath(); ctx.roundRect(x,y,w,h,r); }
+      function metric(el, rows) { el.innerHTML=rows.map(([k,v])=>`<div class="metric"><span>${k}</span><strong>${v}</strong></div>`).join(''); }
+      function drawCanvasMetrics(ctx, title, rows, W, H, placement='bottom-right') {
+        const compact=W<640, rowH=compact?25:32, panelW=compact?Math.min(W-28,240):330, panelH=44+rows.length*rowH;
+        const px=W-panelW-14, py=placement==='top-right'?84:H-panelH-14;
+        ctx.save();
+        ctx.fillStyle='rgba(255,255,255,.96)'; rounded(ctx,px,py,panelW,panelH,9); ctx.fill();
+        ctx.strokeStyle=colors.line; ctx.lineWidth=1; ctx.stroke();
+        text(ctx,title,px+14,py+22,{align:'left',font:`700 ${compact?14:16}px "Microsoft YaHei"`,color:colors.blue});
+        rows.forEach(([key,value],i)=>{
+          const y=py+55+i*rowH;
+          if(i) line(ctx,px+9,y-rowH/2,px+panelW-9,y-rowH/2,'#edf2f7');
+          text(ctx,key,px+14,y,{align:'left',font:`${compact?12:14}px "Microsoft YaHei"`,color:colors.muted});
+          text(ctx,String(value),px+panelW-14,y,{align:'right',font:`600 ${compact?12:14}px ui-monospace,Consolas,monospace`,color:colors.ink});
+        });
+        ctx.restore();
+      }
+      function line(ctx,x1,y1,x2,y2,style,width=1) { ctx.save();ctx.strokeStyle=style;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore(); }
+      function arrow(ctx,x,y,angle,color) { ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(7,0);ctx.lineTo(-4,-4);ctx.lineTo(-4,4);ctx.closePath();ctx.fill();ctx.restore(); }
+      function cubicPoint(p0,p1,p2,p3,t) { const u=1-t; return {x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y}; }
+
+      function bindM1() {
+        const s=state.m1, root=$('#model-1');
+        const inputs=[['m1Distance','distance','m1DistanceOut',v=>`${v} mm`],['m1Eps','eps','m1EpsOut',v=>`${v}`],['m1Volt','volt','m1VoltOut',v=>`${(+v).toFixed(1)} V`],['m1Frequency','freq','m1FrequencyOut',v=>`${v} kHz`]];
+        inputs.forEach(([id,key,out,fmt])=>{ const el=$('#'+id); const sync=()=>{s[key]=+el.value; $('#'+out).value=fmt(el.value);};el.addEventListener('input',sync);sync(); });
+        $$('#m1Mode button').forEach(b=>b.addEventListener('click',()=>{s.mode=b.dataset.value;$$('#m1Mode button').forEach(x=>x.classList.toggle('active',x===b));}));
+        bindPlayback(root,s,$('#canvas1'),'模型一_触摸屏电容感应');
+        bindAutoScan(root,s);
+      }
+      function bindM2() {
+        const s=state.m2, root=$('#model-2');
+        const inputs=[['m2Power','power','m2PowerOut',v=>`${v} W`],['m2Time','time','m2TimeOut',v=>`${v} s`],['m2Frequency','freq','m2FrequencyOut',v=>`${(+v).toFixed(2)} GHz`]];
+        inputs.forEach(([id,key,out,fmt])=>{ const el=$('#'+id); const sync=()=>{s[key]=+el.value; $('#'+out).value=fmt(el.value);};el.addEventListener('input',sync);sync(); });
+        $$('#m2Material button').forEach(b=>b.addEventListener('click',()=>{s.material=b.dataset.value;$$('#m2Material button').forEach(x=>x.classList.toggle('active',x===b));}));
+        bindPlayback(root,s,$('#canvas2'),'模型二_微波炉选择性加热');
+        bindAutoScan(root,s);
+      }
+      function bindPlayback(root,s,canvas,fileName) { $('.play',root).addEventListener('click',e=>{s.playing=!s.playing;e.currentTarget.textContent=s.playing?'暂停':'播放';}); $$('.speed button',root).forEach(b=>b.addEventListener('click',()=>{s.speed=+b.dataset.speed;$$('.speed button',root).forEach(x=>x.classList.toggle('active',x===b));})); $('.export',root).addEventListener('click',e=>{if(s.exporting&&s.recorder){s.recorder.stop();return;}exportCanvas(canvas,s,fileName,e.currentTarget);}); }
+      function exportCanvas(canvas,s,fileName,button) { if(s.exporting)return; if(!canvas.captureStream||!window.MediaRecorder){button.textContent='浏览器不支持导出';return;} const mp4=['video/mp4;codecs=avc1.42E01E','video/mp4'],webm=['video/webm;codecs=vp9','video/webm'],mime=[...mp4,...webm].find(t=>MediaRecorder.isTypeSupported(t));if(!mime){button.textContent='浏览器不支持导出';return;}const wasPlaying=s.playing,original=button.textContent;const chunks=[],recorder=new MediaRecorder(canvas.captureStream(30),{mimeType:mime,videoBitsPerSecond:8000000});recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};recorder.onstop=()=>{const ext=mime.startsWith('video/mp4')?'mp4':'webm',blob=new Blob(chunks,{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`${fileName}.${ext}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);s.exporting=false;s.recorder=null;s.playing=wasPlaying;button.textContent=ext==='mp4'?'MP4 已导出':'已导出 WebM';setTimeout(()=>button.textContent=original,2200);};try{recorder.start(250);s.recorder=recorder;s.exporting=true;s.playing=true;button.textContent='结束录制';}catch(error){s.recorder=null;s.exporting=false;button.textContent=original;console.error('录制启动失败',error);} }
+      function bindAutoScan(root,s) { $$('.auto-scan',root).forEach(btn=>btn.addEventListener('click',()=>{const id=btn.dataset.auto;if(s.autoScan===id){s.autoScan=null;}else{const input=$('#'+id);s.autoScan=id;s.autoPosition=(+input.value-+input.min)/(+input.max-+input.min);s.autoDirection=1;}$$('.auto-scan',root).forEach(x=>{const on=x.dataset.auto===s.autoScan;x.classList.toggle('on',on);x.textContent=on?'■ 停止':'▶ 自动';});})); }
+      function advanceAutoScan(s,dt) { if(!s.autoScan)return;const input=$('#'+s.autoScan), span=+input.max-+input.min;s.autoPosition+=s.autoDirection*dt/3600;if(s.autoPosition>=1){s.autoPosition=1;s.autoDirection=-1;}if(s.autoPosition<=0){s.autoPosition=0;s.autoDirection=1;}input.value=+input.min+s.autoPosition*span;input.dispatchEvent(new Event('input')); }
+      function syncHeatingTimeControl(s) { const input=$('#m2Time');input.value=Math.round(s.time/5)*5;$('#m2TimeOut').value=`${s.time.toFixed(1)} s`; }
+      function advanceHeatingTime(s,dt) { if(s.exporting||s.autoScan==='m2Time')return;const rate=s.speed;s.time=clamp(s.time+dt/1000*rate,0,180);syncHeatingTimeControl(s); }
+
+      // 沿用原文件的手指造型：指腹、指甲、皮肤高光及轮廓均保留。
+      function drawOriginalFinger(ctx, cx, tipY, scale) {
+        ctx.save(); ctx.translate(cx,tipY); ctx.scale(scale,scale);
+        ctx.beginPath(); ctx.moveTo(-16,-155); ctx.quadraticCurveTo(-20,-110,-17,-65); ctx.quadraticCurveTo(-19,-30,-15,0); ctx.quadraticCurveTo(-13,40,-9,78); ctx.quadraticCurveTo(0,88,9,78); ctx.quadraticCurveTo(13,40,15,0); ctx.quadraticCurveTo(19,-30,17,-65); ctx.quadraticCurveTo(20,-110,16,-155); ctx.closePath();
+        const grad=ctx.createLinearGradient(-16,-155,16,85); grad.addColorStop(0,'#e0b0a0');grad.addColorStop(.35,'#f5d0c5');grad.addColorStop(.65,'#f0c8b8');grad.addColorStop(.9,'#d8a088');grad.addColorStop(1,'#b08070'); ctx.fillStyle=grad;ctx.fill();ctx.strokeStyle='#905040';ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
+        ctx.fillStyle='rgba(140,70,55,.18)';ctx.beginPath();ctx.moveTo(-18,-58);ctx.quadraticCurveTo(0,-52,18,-58);ctx.quadraticCurveTo(18,-48,0,-42);ctx.quadraticCurveTo(-18,-48,-18,-58);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(-15,2);ctx.quadraticCurveTo(0,8,15,2);ctx.quadraticCurveTo(15,12,0,18);ctx.quadraticCurveTo(-15,12,-15,2);ctx.closePath();ctx.fill();
+        ctx.beginPath();ctx.ellipse(0,72,6.5,13,0,0,Math.PI*2);ctx.fillStyle='#fff0f0';ctx.fill();ctx.strokeStyle='rgba(160,90,80,.45)';ctx.lineWidth=1.3;ctx.stroke();ctx.beginPath();ctx.ellipse(0,62,3,4.5,0,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.5)';ctx.fill();ctx.fillStyle='rgba(130,60,50,.14)';ctx.beginPath();ctx.moveTo(-16,-155);ctx.quadraticCurveTo(-8,-60,-10,80);ctx.quadraticCurveTo(-14,40,-14,-155);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(7,-135);ctx.quadraticCurveTo(10,-40,7,65);ctx.stroke();ctx.restore();
+      }
+      // 沿用原文件的水滴造型，并保留接触面扩散波纹。
+      function drawOriginalWaterDrop(ctx, cx, tipY, scale, phase) {
+        ctx.save();ctx.translate(cx,tipY);ctx.scale(scale,scale);ctx.beginPath();ctx.moveTo(-24,0);ctx.bezierCurveTo(-34,-32,-8,-62,0,-72);ctx.bezierCurveTo(8,-62,34,-32,24,0);ctx.bezierCurveTo(16,20,-16,20,-24,0);ctx.closePath();ctx.fillStyle='rgba(41,182,246,.35)';ctx.fill();ctx.strokeStyle='#0288d1';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.ellipse(-6,-36,4.5,8,-.3,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.35)';ctx.fill();ctx.strokeStyle='rgba(33,150,243,.45)';ctx.lineWidth=1.6;for(let i=0;i<3;i++){const r=26+i*11+Math.sin(phase+i)*2;ctx.beginPath();ctx.ellipse(0,3,r,r*.3,0,0,Math.PI*2);ctx.stroke();}ctx.restore();
+      }
+      function drawPolarization(ctx,x,y,amplitude,color) {
+        ctx.save();ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x,y-amplitude);ctx.lineTo(x,y+amplitude);ctx.stroke();arrow(ctx,x,y+amplitude,amplitude>0?Math.PI/2:-Math.PI/2,color);ctx.globalAlpha=.72;ctx.beginPath();ctx.arc(x,y-amplitude,2.8,0,Math.PI*2);ctx.fill();ctx.restore();
+      }
+      function drawM1() {
+        const s=state.m1, canvas=$('#canvas1'), {ctx,W,H}=(()=>{const r=fit(canvas);return {ctx:r.ctx,W:r.w,H:r.h};})();
+        ctx.clearRect(0,0,W,H);
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+        const grid=44;ctx.strokeStyle='#edf4fb';ctx.lineWidth=1; for(let x=0;x<W;x+=grid)line(ctx,x,0,x,H,'#edf4fb');for(let y=0;y<H;y+=grid)line(ctx,0,y,W,y,'#edf4fb');
+        // 主体上移，给底部读数曲线留位，同时充分利用画布上方空间。
+        const cx=W*.5, tabletW=Math.min(W*.80,1380), left=cx-tabletW/2, baseY=H*.70, layerH=54;
+        const gap=lerp(48,Math.min(H*.34,310),(s.distance-2)/58), electrodeY=baseY-layerH, topY=electrodeY-gap;
+        const modeFactor=s.mode==='none'?0:s.mode==='finger'?.72:1;
+        // 用约 2 秒的完整周期呈现交变场；频率调高时，画面中的反向也随之加快。
+        const phase=s.t*.045*Math.sqrt(s.freq/100), drive=.18+.82*(s.volt/10), field=(.18+.82*Math.abs(Math.sin(phase)))*drive;
+        const eSign=Math.sin(phase)>=0?1:-1;
+        const lossPhase=(s.mode==='water'?.42:.11)+((s.freq-50)/450)*.13;
+        const dSign=Math.sin(phase-lossPhase)>=0?1:-1;
+        // 顶部用一条短的因果链呈现报告中的 E(t) → D(t) → ΔC。
+        const labelY=48, compact=W<700;
+        text(ctx,compact?'① E(t)':'① 扫描电压产生 E(t)',compact?W*.18:W*.20,labelY,{font:`700 ${compact?16:TYPOGRAPHY.chain}px "Microsoft YaHei"`,color:colors.blue});
+        text(ctx,compact?'② D(t)':'② 介质极化形成 D(t)',W*.50,labelY,{font:`700 ${compact?16:TYPOGRAPHY.chain}px "Microsoft YaHei"`,color:colors.orange});
+        text(ctx,compact?'③ ΔC':'③ 芯片检测 ΔC',compact?W*.82:W*.80,labelY,{font:`700 ${compact?16:TYPOGRAPHY.chain}px "Microsoft YaHei"`,color:colors.ink});
+        line(ctx,W*.32,labelY,W*.39,labelY,'#94a3b8',1.2);arrow(ctx,W*.39,labelY,0,'#94a3b8');line(ctx,W*.61,labelY,W*.68,labelY,'#94a3b8',1.2);arrow(ctx,W*.68,labelY,0,'#94a3b8');
+        text(ctx,'交变电场 E(t)',left,Math.max(100,topY-58),{align:'left',font:`700 ${compact?16:TYPOGRAPHY.label}px "Microsoft YaHei"`,color:colors.muted});
+        // field lines (deliberately shown before components)
+        const n=20; for(let i=0;i<n;i++) { const x=left+tabletW*(.04+i*.92/(n-1)); const influence=modeFactor*Math.max(0,1-Math.abs(x-cx)/(tabletW*.33)); const alpha=clamp((.14+.7*field)*(.48+influence*.78),.06,1); const p0={x,y:topY},p1={x:x+(cx-x)*influence*.36,y:topY+gap*.3},p2={x:x+(cx-x)*influence*.36,y:electrodeY-gap*.25},p3={x,y:electrodeY}; ctx.save();ctx.strokeStyle=`rgba(37,99,235,${alpha})`;ctx.lineWidth=(1.5+influence*2.1)*(.72+.55*drive);ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.bezierCurveTo(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y);ctx.stroke(); arrow(ctx,x+(cx-x)*influence*.22,topY+gap*.53,eSign>0?Math.PI/2:-Math.PI/2,`rgba(37,99,235,${alpha})`); if(i%2===0){const travel=((s.t*.016+i*.13)%1),pt=cubicPoint(p0,p1,p2,p3,eSign>0?travel:1-travel);ctx.fillStyle=`rgba(6,182,212,${clamp(.2+.72*field,.2,1)})`;ctx.beginPath();ctx.arc(pt.x,pt.y,2.2+2.8*field,0,Math.PI*2);ctx.fill();}ctx.restore(); }
+        // 同心脉冲强调手指/水滴靠近后，局部耦合区域随扫描电压周期性增强。
+        if(modeFactor){const pulse=(s.t*.015)%1, radius=12+pulse*(32+modeFactor*38);ctx.save();ctx.globalAlpha=(1-pulse)*(.2+.42*field)*modeFactor;ctx.strokeStyle='#06b6d4';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,topY-1,radius,radius*.27,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
+        // air gap
+        ctx.save();ctx.setLineDash([7,7]);ctx.strokeStyle='#cbd5e1';ctx.lineWidth=1.5;ctx.strokeRect(left,topY,tabletW,gap);ctx.restore();text(ctx,`空气间隙  d = ${s.distance} mm`,cx,topY+gap/2,{font:`600 ${compact?15:16}px "Microsoft YaHei"`,color:colors.muted});
+        // device layers
+        ctx.fillStyle='#dbeafe';ctx.fillRect(left,electrodeY,tabletW,layerH);ctx.strokeStyle='#2563eb';ctx.lineWidth=2.5;ctx.strokeRect(left,electrodeY,tabletW,layerH);text(ctx,'ITO 感应电极',cx,electrodeY+layerH/2,{font:`700 ${compact?16:18}px "Microsoft YaHei"`,color:'#1d4ed8'});
+        ctx.fillStyle='#e8f4ff';ctx.fillRect(left,baseY,tabletW,layerH);ctx.strokeStyle='#60a5fa';ctx.strokeRect(left,baseY,tabletW,layerH);text(ctx,`玻璃基板   εᵣ = ${s.eps}   ·   束缚电荷极化 D(t)`,cx,baseY+layerH*.30,{font:`600 ${compact?15:17}px "Microsoft YaHei"`,color:'#2563eb'});
+        for(let i=0;i<13;i++){const x=left+tabletW*(.07+i*.86/12);drawPolarization(ctx,x,baseY+layerH*.78,dSign*(2+9*field),'rgba(249,115,22,.82)');}
+        // charges
+        if(modeFactor) { const qCount=5+Math.round(10*(s.volt/10)); for(let i=0;i<qCount;i++){const x=left+tabletW*(.16+i*.68/(qCount-1)),positive=(i%2===0)===Boolean(eSign>0);text(ctx,positive?'+':'−',x,electrodeY-16,{font:`700 ${18+5*drive}px Georgia`,color:positive?'#f97316':'#2563eb'});} }
+        // finger or water
+        if(s.mode==='finger') { drawOriginalFinger(ctx,cx,topY-112,1.16);text(ctx,'手指（导体）',cx,Math.max(100,topY-204),{font:`700 ${compact?16:18}px "Microsoft YaHei"`,color:'#92400e'}); }
+        if(s.mode==='water') { drawOriginalWaterDrop(ctx,cx,topY-24,1.22,phase);for(let i=0;i<4;i++)drawDipole(ctx,cx+(i%2?14:-14),topY-54+Math.floor(i/2)*25,phase-lossPhase+i*.7,.58);text(ctx,'水滴：高 εᵣ、极性分子随 E(t) 转向',cx,Math.max(100,topY-130),{font:`700 ${compact?16:18}px "Microsoft YaHei"`,color:'#0369a1'}); }
+        // mini trace
+        const px=24,py=H-108,pw=Math.min(280,W*.27),ph=78;ctx.fillStyle='rgba(255,255,255,.94)';rounded(ctx,px,py,pw,ph,10);ctx.fill();ctx.strokeStyle=colors.line;ctx.lineWidth=1.5;ctx.stroke();text(ctx,'电容响应',px+14,py+19,{align:'left',font:`700 ${compact?13:16}px "Microsoft YaHei"`,color:colors.muted});ctx.beginPath(); for(let x=0;x<pw-26;x+=2){const y=py+ph-13-(Math.sin(x*.11+s.t*.04)*.5+.5)*(18+modeFactor*21);x?ctx.lineTo(px+13+x,y):ctx.moveTo(px+13+x,y);}ctx.strokeStyle=colors.orange;ctx.lineWidth=3;ctx.stroke();
+        const eps0=8.854e-12, c0=eps0*s.eps*1e-4/(s.distance*1e-3)*1e12, factor=1+modeFactor*(s.mode==='water'?s.eps/4*.4:.45)*(60-s.distance)/58, delta=c0*(factor-1), lagDeg=Math.round(lossPhase*180/Math.PI), charge=c0*factor*s.volt;
+        const m1Rows=[['耦合状态',s.mode==='none'?'无耦合':s.mode==='finger'?'手指接近':'水滴误触'],['基准电容',`${c0.toFixed(2)} pF`],['电容变化',modeFactor?`+${delta.toFixed(2)} pF`:'—'],['驱动电荷 |Q| = CV',`${charge.toFixed(2)} pC`],['D 相对 E 的滞后',`${lagDeg}°（示意）`],['电场强度',`${(s.volt/(s.distance/1000)/1000).toFixed(1)} kV/m`]];
+        metric($('#m1Metrics'),m1Rows); drawCanvasMetrics(ctx,'实时读数',m1Rows,W,H,'top-right');
+      }
+
+      function drawDipole(ctx,x,y,angle,scale=1) { ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);ctx.fillStyle='#ef4444';ctx.beginPath();ctx.arc(0,-6,6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-7,6,3.5,0,Math.PI*2);ctx.arc(7,6,3.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-7,6);ctx.lineTo(0,-6);ctx.lineTo(7,6);ctx.stroke();ctx.restore(); }
+      // 频率扫描采用简化的介电损耗谱；输入功率通过腔内场强影响吸收量。
+      function lossAt(material,freq) { if(material==='water') return 14*Math.exp(-Math.pow((freq-2.45)/1.15,2)); if(material==='ceramic') return .05; return Infinity; }
+      function absorptionAt(material,freq) { if(material==='metal') return 0; if(material==='ceramic') return .006; const lossIndex=(freq/2.45)*(lossAt('water',freq)/14); return clamp(.05+.70*lossIndex/(.55+lossIndex),.05,.78); }
+      // wave-amplitude / loss-power / temperature-slope: the three main model-2 outputs.
+      function drawHeatingHud(ctx,x,y,w,h,phase,waveAmplitude,lossPower,maxLossPower,temperatureSlope) {
+        const panelH=Math.min(h,156), barW=w-28, lossRatio=clamp(lossPower/maxLossPower,0,1);
+        ctx.save();ctx.fillStyle='rgba(255,255,255,.96)';rounded(ctx,x,y,w,panelH,10);ctx.fill();ctx.strokeStyle=colors.line;ctx.stroke();
+        text(ctx,'波形振幅 |E|',x+14,y+20,{align:'left',font:'700 15px "Microsoft YaHei"',color:colors.blue});
+        text(ctx,`${waveAmplitude.toFixed(2)} E₀`,x+w-14,y+20,{align:'right',font:'600 15px ui-monospace,Consolas,monospace',color:colors.ink});
+        ctx.beginPath();for(let i=0;i<=barW;i+=2){const q=i/barW,py=y+50+Math.sin(q*Math.PI*4+phase)*Math.min(15,waveAmplitude*9);i?ctx.lineTo(x+14+i,py):ctx.moveTo(x+14+i,py);}ctx.strokeStyle='#facc15';ctx.lineWidth=3.2;ctx.stroke();
+        text(ctx,'损耗功率 P_loss',x+14,y+82,{align:'left',font:'700 15px "Microsoft YaHei"',color:colors.orange});
+        text(ctx,`${lossPower.toFixed(0)} W`,x+w-14,y+82,{align:'right',font:'600 15px ui-monospace,Consolas,monospace',color:colors.ink});
+        ctx.fillStyle='#ffedd5';rounded(ctx,x+14,y+98,barW,14,6);ctx.fill();ctx.fillStyle=colors.orange;rounded(ctx,x+14,y+98,Math.max(6,barW*lossRatio),14,6);ctx.fill();
+        text(ctx,`温升斜率 dT/dt  ${temperatureSlope.toFixed(2)} °C/s`,x+14,y+134,{align:'left',font:'600 14px "Microsoft YaHei"',color:colors.muted});ctx.restore();
+      }
+      function drawM2() {
+        const s=state.m2, canvas=$('#canvas2'), {ctx,W,H}=(()=>{const r=fit(canvas);return {ctx:r.ctx,W:r.w,H:r.h};})();ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+        // 腔体同步上移，压缩无效留白并保留底部吸收谱的阅读空间。
+        const cw=Math.min(W*.86,1500),ch=Math.min(H*.78,760),x=(W-cw)/2,y=H*.08; rounded(ctx,x,y,cw,ch,18);ctx.fillStyle='#eef6ff';ctx.fill();ctx.strokeStyle='#334155';ctx.lineWidth=3.5;ctx.stroke();
+        text(ctx,`微波炉腔体 · ${s.freq.toFixed(2)} GHz`,W/2,y-26,{font:'700 20px "Microsoft YaHei"',color:colors.ink});
+        const fieldScale=clamp(Math.sqrt(s.power/700),.2,1.4), waveAmplitude=fieldScale, eps2=lossAt(s.material,s.freq), absorption=absorptionAt(s.material,s.freq), lossPower=s.power*absorption, maxLossPower=700*.78;
+        const thermalMass=s.material==='water'?.25*4180:.25*800, temperatureSlope=lossPower/thermalMass, deltaT=s.time*temperatureSlope, pAbs=lossPower;
+        const phase=s.t*.115*(s.freq/2.45), fieldYellow='#facc15', fieldSign=Math.sin(phase)>=0?1:-1, lagPhase=.8+((s.freq-1)/4)*.12, laggedField=Math.sin(phase-lagPhase), laggedSign=laggedField>=0?1:-1; // visible dielectric lag
+        for(let row=0;row<4;row++){ctx.beginPath();for(let dx=0;dx<cw;dx+=3){const wy=y+ch*(.16+row*.19)+Math.sin(dx*.032*(s.freq/2.45)+phase+row)*(8+16*fieldScale);dx?ctx.lineTo(x+dx,wy):ctx.moveTo(x+dx,wy);}ctx.strokeStyle=`rgba(250,204,21,${clamp(.30+fieldScale*.26,.30,.82)})`;ctx.lineWidth=1.8+fieldScale*.9;ctx.stroke();for(let dx=70;dx<cw-40;dx+=120){const ay=y+ch*(.16+row*.19);line(ctx,x+dx,ay-13*fieldSign,x+dx,ay+13*fieldSign,fieldYellow,1.8);arrow(ctx,x+dx,ay+13*fieldSign,fieldSign>0?Math.PI/2:-Math.PI/2,fieldYellow);}}
+        text(ctx,fieldSign>0?'E(t) ↑':'E(t) ↓',x+48,y+44,{align:'left',font:'700 17px "Microsoft YaHei"',color:fieldYellow});
+        const mx=W/2,my=y+ch*.57, heat=clamp(deltaT/10,0,1), ceramicHeat=clamp((s.time/180)*fieldScale*.24,0,.28), metalLevel=clamp(((s.time-35)/120)*clamp(fieldScale,.35,1.2),0,1);
+        if(s.material==='water') { // bowl and rotating molecules
+          ctx.beginPath();ctx.moveTo(mx-122,my+58);ctx.quadraticCurveTo(mx-112,my+116,mx,my+122);ctx.quadraticCurveTo(mx+112,my+116,mx+122,my+58);ctx.closePath();ctx.fillStyle=`hsl(${lerp(198,24,heat)},85%,${lerp(86,70,heat)}%)`;ctx.fill();ctx.strokeStyle=heat>.5?'#ea580c':'#0284c7';ctx.lineWidth=3;ctx.stroke();line(ctx,mx-120,my+57,mx+120,my+57,heat>.5?'#ea580c':'#0284c7',3);text(ctx,`水 · +${(s.time*pAbs/(.25*4180)).toFixed(1)} °C`,mx,my+84,{font:'700 20px "Microsoft YaHei"',color:heat>.5?'#c2410c':'#0369a1'});
+          for(let i=0;i<12;i++){const dipoleAngle=(1-laggedField)*Math.PI/2+Math.sin(s.t*.035+i*1.7)*(.06+heat*.08), r=24+(i%3)*24, agitation=heat*(4+fieldScale*4),px=mx+Math.cos(i*2.4)*r+Math.sin(s.t*.19+i*3.1)*agitation,py=my+64+Math.sin(i*1.7)*r*.44+Math.cos(s.t*.17+i*2.3)*agitation*.6;drawDipole(ctx,px,py,dipoleAngle,.78+.16*fieldScale);}
+          const thermal=.58+.42*Math.sin(s.t*.09);const glow=ctx.createRadialGradient(mx,my+64,5,mx,my+64,170);glow.addColorStop(0,`rgba(249,115,22,${heat*(.28+.32*thermal)})`);glow.addColorStop(1,'rgba(249,115,22,0)');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(mx,my+64,170,0,Math.PI*2);ctx.fill();
+          const steamCount=2+Math.round(heat*7);for(let i=0;i<steamCount;i++){const sx=mx-(steamCount-1)*11+i*22,sy=my-3-Math.abs(Math.sin(phase*.7+i))* (18+heat*42);ctx.strokeStyle=`rgba(249,115,22,${.18+heat*.72})`;ctx.lineWidth=2+heat*1.5;ctx.beginPath();ctx.arc(sx,sy,8+heat*4,Math.PI*.1,Math.PI*.9);ctx.stroke();} text(ctx,heat>.68?'明显升温 · 蒸汽增强':'极性分子翻转 → 能量吸收',mx,y+ch-34,{font:'700 17px "Microsoft YaHei"',color:colors.orange});
+          for(let i=0;i<12;i++){const rise=(s.t*.018+i*.17)%1,px=mx-72+(i%6)*29+Math.sin(s.t*.07+i)*6,py=my+86-rise*105;ctx.fillStyle=`rgba(249,115,22,${heat*(1-rise)*.8})`;ctx.beginPath();ctx.arc(px,py,2+heat*2.5,0,Math.PI*2);ctx.fill();}
+        } else if(s.material==='ceramic') { const ceramicDeltaT=s.time*pAbs/(.25*800),glow=ctx.createRadialGradient(mx,my+64,8,mx,my+64,160);glow.addColorStop(0,`rgba(249,115,22,${ceramicHeat})`);glow.addColorStop(1,'rgba(249,115,22,0)');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(mx,my+64,160,0,Math.PI*2);ctx.fill();rounded(ctx,mx-120,my+28,240,76,10);ctx.fillStyle=`hsl(${lerp(210,28,ceramicHeat/.28)},${lerp(20,62,ceramicHeat/.28)}%,${lerp(96,84,ceramicHeat/.28)}%)`;ctx.fill();ctx.strokeStyle=ceramicHeat>.14?'#f59e0b':'#94a3b8';ctx.lineWidth=2.5;ctx.stroke();text(ctx,`陶瓷 · +${ceramicDeltaT.toFixed(1)} °C`,mx,my+66,{font:'700 20px "Microsoft YaHei"',color:ceramicHeat>.14?'#b45309':'#475569'});text(ctx,ceramicHeat>.18?'低损耗 · 仅轻微升温':'ε″ ≈ 0 · 微波大部分透过',mx,y+ch-34,{font:'700 17px "Microsoft YaHei"',color:colors.muted});
+        } else {
+          // 金属并非靠体吸收而“加热爆炸”：反射场会在尖端/褶皱处增强，逐步引发电弧与闪络。
+          const glow=ctx.createRadialGradient(mx,my+64,8,mx,my+64,180);glow.addColorStop(0,`rgba(255,89,30,${metalLevel*.38})`);glow.addColorStop(1,'rgba(255,89,30,0)');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(mx,my+64,180,0,Math.PI*2);ctx.fill();
+          rounded(ctx,mx-96,my+22,192,88,8);ctx.fillStyle=metalLevel>.72?'#64748b':'#94a3b8';ctx.fill();ctx.strokeStyle='#475569';ctx.lineWidth=2.5;ctx.stroke();text(ctx,'金属',mx,my+66,{font:'700 20px "Microsoft YaHei"',color:'#1e293b'});
+          if(metalLevel>.48){const fracture=(metalLevel-.48)/.52;ctx.save();ctx.strokeStyle='#f8fafc';ctx.lineWidth=1.5+fracture*5;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(mx-63,my+31);ctx.lineTo(mx-29,my+47);ctx.lineTo(mx-10,my+40);ctx.lineTo(mx+7,my+62);ctx.lineTo(mx+44,my+76);ctx.lineTo(mx+65,my+90);ctx.moveTo(mx-18,my+22);ctx.lineTo(mx-5,my+43);ctx.lineTo(mx+16,my+31);ctx.lineTo(mx+37,my+21);ctx.moveTo(mx-40,my+82);ctx.lineTo(mx-20,my+61);ctx.lineTo(mx+2,my+73);ctx.lineTo(mx+17,my+90);ctx.stroke();ctx.restore();}
+          for(let i=0;i<5;i++){const ax=mx-70+i*35;line(ctx,ax,y+24,ax,my+2,'#dc2626',2.2);arrow(ctx,ax,my+2,Math.PI/2,'#dc2626');line(ctx,ax,my+101,ax,y+ch-28,'#dc2626',2.2);arrow(ctx,ax,y+ch-28,-Math.PI/2,'#dc2626');}
+          if(metalLevel>.08){const arcs=2+Math.floor(metalLevel*8);for(let i=0;i<arcs;i++){const sx=mx-84+(i/(arcs-1))*168, sy=i%2?my+24:my+104, ex=sx+(Math.sin(s.t*.15+i*2.7))*34, ey=sy+(i%2?-54:54);ctx.save();ctx.strokeStyle=`rgba(255,${Math.round(170+85*metalLevel)},60,${.35+.65*metalLevel})`;ctx.lineWidth=1.6+metalLevel*2.6;ctx.beginPath();ctx.moveTo(sx,sy);for(let j=1;j<=6;j++){const q=j/6,px=sx+(ex-sx)*q+Math.sin(s.t*.25+i*7+j*5)*(5+metalLevel*12),py=sy+(ey-sy)*q+Math.cos(s.t*.21+i*4+j*3)*(4+metalLevel*8);ctx.lineTo(px,py);}ctx.stroke();ctx.restore();}}
+          if(metalLevel>.55){const ring=(s.t*.025)%1,rad=28+ring*(35+metalLevel*26);ctx.save();ctx.globalAlpha=(1-ring)*metalLevel*.75;ctx.strokeStyle='#f97316';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my+52,rad,0,Math.PI*2);ctx.stroke();ctx.restore();}
+          if(metalLevel>.76){const burst=(metalLevel-.76)/.24,flash=Math.max(0,Math.sin(s.t*.16))*burst;ctx.save();for(let i=0;i<68;i++){const a=i*2.399+s.t*.012,dist=burst*(48+(i%8)*24)+Math.abs(Math.sin(s.t*.11+i))*10,px=mx+Math.cos(a)*dist,py=my+52+Math.sin(a)*dist*.76;ctx.fillStyle=i%4?'#f97316':'#fde047';ctx.globalAlpha=Math.max(.16,1-burst*.24);ctx.beginPath();ctx.arc(px,py,2+(i%5)*1.05,0,Math.PI*2);ctx.fill();}for(let i=0;i<11;i++){const a=i*2.399+s.t*.009,dist=22+burst*(88+(i%4)*25),px=mx+Math.cos(a)*dist,py=my+52+Math.sin(a)*dist*.72;ctx.save();ctx.translate(px,py);ctx.rotate(a+s.t*.022);ctx.fillStyle=i%2?'#475569':'#94a3b8';ctx.strokeStyle='#1e293b';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-8,-6);ctx.lineTo(12,-3);ctx.lineTo(7,9);ctx.lineTo(-10,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}ctx.restore();ctx.save();ctx.globalAlpha=.22+burst*.35;ctx.strokeStyle='#fb923c';ctx.lineWidth=4+burst*5;ctx.beginPath();ctx.arc(mx,my+52,54+burst*96+flash*16,0,Math.PI*2);ctx.stroke();ctx.restore();if(burst>.18){ctx.save();ctx.globalAlpha=(burst-.18)*(.55+.45*flash);ctx.fillStyle='#fff7ed';ctx.beginPath();ctx.arc(mx,my+52,86+burst*82,0,Math.PI*2);ctx.fill();ctx.restore();}}
+          const stage=metalLevel<.08?'反射阶段':metalLevel<.55?'局部电弧':metalLevel<.76?'闪络增强':'金属炸裂（示意）';text(ctx,`金属反射 → ${stage}`,mx,y+ch-34,{font:'700 17px "Microsoft YaHei"',color:colors.red});
+        }
+        drawHeatingHud(ctx,20,H-178,Math.min(520,W*.52),156,phase,waveAmplitude,lossPower,maxLossPower,temperatureSlope);
+        const metalStage=metalLevel<.08?'反射阶段':metalLevel<.55?'局部电弧':metalLevel<.76?'闪络增强':'金属炸裂（示意）';
+        const m2Rows=s.material==='metal'?[['材料','金属'],['加热时间',`${s.time.toFixed(1)} s`],['微波响应','主要反射'],['体吸收效率 η','≈ 0%'],['局部电弧风险',`${(metalLevel*100).toFixed(0)}%`],['放电阶段',metalStage]]:[['材料',s.material==='water'?'水':'陶瓷'],['加热时间',`${s.time.toFixed(1)} s`],['介电损耗 ε″(f)',eps2.toFixed(2)],['吸收效率 η',`${(absorption*100).toFixed(0)}%`],['吸收功率 Pₐᵦₛ',`${pAbs.toFixed(0)} W`],['估算温升',`+${deltaT.toFixed(1)} °C`]];
+        m2Rows.forEach(row=>{if(String(row[0]).includes('功率')){row[0]='损耗功率 P_loss';row[1]=`${lossPower.toFixed(0)} W`;}});m2Rows.push(['波形振幅 |E|',`${waveAmplitude.toFixed(2)} E₀`],['损耗功率条',`${Math.round(lossPower/maxLossPower*100)}%`],['温升斜率 dT/dt',`${temperatureSlope.toFixed(2)} °C/s`]);
+        metric($('#m2Metrics'),m2Rows); drawCanvasMetrics(ctx,'实时读数',m2Rows,W,H);
+      }
+      bindM1();bindM2();
+      let last=performance.now();function loop(now){const dt=Math.min(40,now-last);last=now;if(state.m1.playing){advanceAutoScan(state.m1,dt);state.m1.t+=dt*.06*state.m1.speed;}if(state.m2.playing){advanceAutoScan(state.m2,dt);advanceHeatingTime(state.m2,dt);state.m2.t+=dt*.06*state.m2.speed;}drawM1();drawM2();requestAnimationFrame(loop);}requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
